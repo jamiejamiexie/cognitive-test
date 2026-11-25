@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>大腦專注力與抗干擾認知實驗室</title>
-  <!-- 引入 Chart.js 用於繪製結算雷達圖 -->
+  <title>幼兒神經發展與廣泛性發展障礙（ASD / 雷特氏症）行為觀察量表</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
+      --primary: #0f766e;
+      --primary-light: #ccfbf1;
+      --primary-hover: #115e59;
+      --secondary: #2563eb;
       --bg: #f8fafc;
       --card: #ffffff;
       --text: #1e293b;
       --muted: #64748b;
-      --success: #16a34a;
-      --danger: #dc2626;
+      --border: #e2e8f0;
+      --warn-bg: #fef3c7;
+      --warn-text: #92400e;
+      --alert-bg: #fee2e2;
+      --alert-text: #991b1b;
     }
 
     * {
@@ -28,62 +32,66 @@
       padding: 20px;
       background-color: var(--bg);
       color: var(--text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      line-height: 1.6;
     }
 
     .container {
-      width: 100%;
-      max-width: 600px;
+      max-width: 760px;
+      margin: 0 auto;
       background: var(--card);
       border-radius: 20px;
       padding: 32px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 1.75rem;
-      margin-bottom: 12px;
-      color: #0f172a;
-    }
-
-    h2 {
-      font-size: 1.4rem;
-      margin-bottom: 10px;
-    }
-
-    p {
-      color: var(--muted);
-      line-height: 1.6;
-      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     }
 
     .badge {
       display: inline-block;
-      background: #dbeafe;
+      background: var(--primary-light);
       color: var(--primary);
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 999px;
       font-size: 0.85rem;
-      font-weight: 600;
+      font-weight: 700;
       margin-bottom: 12px;
     }
 
+    h1 {
+      font-size: 1.65rem;
+      margin: 0 0 12px 0;
+      color: #0f172a;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      margin: 24px 0 12px 0;
+      color: #0f172a;
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+    }
+
+    .disclaimer-box {
+      background: #f1f5f9;
+      border-left: 4px solid #64748b;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #475569;
+      margin: 20px 0;
+    }
+
     .btn {
+      display: inline-block;
       background: var(--primary);
       color: white;
       border: none;
       padding: 14px 28px;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 600;
       border-radius: 12px;
       cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
+      transition: background 0.2s, transform 0.1s;
       width: 100%;
-      max-width: 280px;
+      text-align: center;
     }
 
     .btn:hover {
@@ -91,7 +99,18 @@
     }
 
     .btn:active {
-      transform: scale(0.97);
+      transform: scale(0.98);
+    }
+
+    .btn-outline {
+      background: white;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      margin-top: 12px;
+    }
+
+    .btn-outline:hover {
+      background: var(--primary-light);
     }
 
     .screen {
@@ -104,371 +123,542 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 關卡一：Stroop 測驗樣式 */
-    .stroop-word {
-      font-size: 4.5rem;
-      font-weight: 800;
-      margin: 30px 0;
-      letter-spacing: 4px;
-      user-select: none;
+    /* 量表題目卡片樣式 */
+    .progress-bar-wrap {
+      background: #e2e8f0;
+      height: 8px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+      overflow: hidden;
     }
 
-    .color-options {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-top: 20px;
+    .progress-bar-fill {
+      background: var(--primary);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
     }
 
-    .color-btn {
-      padding: 18px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      border: 2px solid #e2e8f0;
+    .question-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
       border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .q-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 6px;
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .q-tag.rett {
+      background: #fce7f3;
+      color: #9d174d;
+    }
+
+    .q-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .q-hint {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .options-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .opt-btn {
+      padding: 10px 8px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
       background: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
       cursor: pointer;
       transition: all 0.15s;
     }
 
-    .color-btn:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
+    .opt-btn:hover {
+      border-color: var(--primary);
+      background: #f0fdfa;
     }
 
-    /* 關卡二：舒爾特方格樣式 */
-    .schulte-grid {
+    .opt-btn.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    /* 報告結果樣式 */
+    .result-cards {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      max-width: 360px;
-      margin: 20px auto;
-    }
-
-    .grid-cell {
-      aspect-ratio: 1;
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: #f1f5f9;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.12s;
-      user-select: none;
-    }
-
-    .grid-cell:hover {
-      background: #e2e8f0;
-    }
-
-    .grid-cell.done {
-      background: #dcfce7;
-      border-color: #86efac;
-      color: var(--success);
-      cursor: default;
-    }
-
-    .grid-cell.wrong {
-      background: #fee2e2;
-      border-color: #fca5a5;
-      animation: shake 0.25s;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
-    }
-
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      background: #f1f5f9;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    /* 結算報告樣式 */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
       margin: 20px 0;
     }
 
-    .stat-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      padding: 14px;
-      border-radius: 12px;
+    @media (max-width: 600px) {
+      .result-cards {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--primary);
+    .res-box {
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      background: #ffffff;
     }
 
-    .stat-label {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-top: 4px;
+    .res-box h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.1rem;
     }
 
-    .chart-box {
-      max-width: 340px;
-      margin: 20px auto;
+    .score-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .level-low { background: #dcfce7; color: #166534; }
+    .level-mid { background: var(--warn-bg); color: var(--warn-text); }
+    .level-high { background: var(--alert-bg); color: var(--alert-text); }
+
+    .chart-container {
+      max-width: 420px;
+      margin: 24px auto;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px 0;
+      font-size: 0.92rem;
+    }
+
+    .compare-table th, .compare-table td {
+      border: 1px solid var(--border);
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .compare-table th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .highlight-row {
+      background: #fffbeb;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- 畫面 0：首頁介紹 -->
+  <!-- 畫面 0：首頁說明 -->
   <div id="screen-intro" class="screen active">
-    <span class="badge">認知心理學互動專題</span>
-    <h1>大腦專注力與抗干擾測試</h1>
-    <p>
-      本實驗透過兩項經典認知神經科學任務，量化你的<strong>「衝動抑制能力」</strong>與<strong>「視覺搜尋專注度」</strong>。全程約需 1 分鐘，請在安靜環境下作答。
+    <span class="badge">幼兒發展觀察與科普衛教系統</span>
+    <h1>廣泛性發展障礙行為觀察量表<br><span style="font-size: 1.15rem; font-weight: 600; color: var(--primary);">泛自閉症類群（ASD）與雷特氏症（Rett Syndrome）特徵比對</span></h1>
+    <p style="color: var(--muted);">
+      本量表專為<strong>家長、保母及一般幼教老師</strong>設計，無需具備特殊教育專業背景，只需根據您平時照顧或觀察幼兒（建議 1～6 歲）的日常行為如實填答。系統將整合評估兩大類發展特徵，並提供具體觀察對照表。
     </p>
-    <button class="btn" onclick="startStroop()">開始測驗</button>
-  </div>
 
-  <!-- 畫面 1：Stroop 色彩干擾測試 -->
-  <div id="screen-stroop" class="screen">
-    <span class="badge">關卡 1 / 2：Stroop 抗干擾任務</span>
-    <h2>請選出文字的「實際顏色」</h2>
-    <p style="margin-bottom: 10px; font-size: 0.9rem;">忽略文字本身的意義，以最快速度點擊正確顏色！</p>
-    <div class="status-bar">
-      <span>進度：<span id="stroop-progress">1</span> / 10 題</span>
-      <span>答對：<span id="stroop-correct">0</span> 題</span>
+    <div class="disclaimer-box">
+      <strong>⚠️ 學術與使用聲明：</strong><br>
+      1. 本工具參考《廣泛性發展障礙量表（PDD-MRS）》評估架構、DSM-5 診斷準則及雷特氏症臨床核心特徵編製，僅供<strong>日常行為觀察紀錄與學習歷程科普展示</strong>。<br>
+      2. 評估結果<strong>不具醫療診斷效力</strong>。若觀察到發展倒退或明顯異常，請務必攜帶紀錄前往醫院「兒童發展聯合評估中心」由醫師專業評估。
     </div>
-    <div id="stroop-word" class="stroop-word">紅</div>
-    <div class="color-options">
-      <button class="color-btn" onclick="answerStroop('red')" style="color: #dc2626;">紅色</button>
-      <button class="color-btn" onclick="answerStroop('blue')" style="color: #2563eb;">藍色</button>
-      <button class="color-btn" onclick="answerStroop('green')" style="color: #16a34a;">綠色</button>
-      <button class="color-btn" onclick="answerStroop('yellow')" style="color: #d97706;">黃色</button>
+
+    <div style="margin-bottom: 20px;">
+      <label style="font-weight: 700; display: block; margin-bottom: 6px;">填寫者身分（選填，用於報告顯示）：</label>
+      <select id="observer-role" style="width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 1rem;">
+        <option value="家長 / 主要照顧者">家長 / 主要照顧者</option>
+        <option value="保母 / 托育人員">保母 / 托育人員</option>
+        <option value="幼兒園 / 學前教師">幼兒園 / 學前教師</option>
+        <option value="其他關注親友 / 專題測試者">其他關注親友 / 專題測試者</option>
+      </select>
     </div>
+
+    <button class="btn" onclick="startAssessment()">開始日常行為觀察評估（共 12 題）</button>
   </div>
 
-  <!-- 畫面 2：過場說明 -->
-  <div id="screen-transition" class="screen">
-    <span class="badge">第一階段完成</span>
-    <h2>準備進入視覺搜尋任務</h2>
-    <p>
-      接下來畫面會出現 <strong>1 到 16</strong> 的亂數方格（舒爾特方格）。<br>
-      請用最快速度<strong>依序從 1 點到 16</strong>，測試你的瞬間注意力集中程度。
-    </p>
-    <button class="btn" onclick="startSchulte()">開始關卡 2</button>
-  </div>
-
-  <!-- 畫面 3：舒爾特方格 -->
-  <div id="screen-schulte" class="screen">
-    <span class="badge">關卡 2 / 2：舒爾特視覺搜尋</span>
-    <h2>依序點擊 1 → 16</h2>
-    <div class="status-bar">
-      <span>下一個目標：<strong id="schulte-target" style="color: var(--primary); font-size: 1.1rem;">1</strong></span>
-      <span>失誤次數：<span id="schulte-errors">0</span> 次</span>
+  <!-- 畫面 1：單一整合量表填答區 -->
+  <div id="screen-quiz" class="screen">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <span class="badge" style="margin: 0;">幼兒日常行為觀察（請依據近 1 個月表現填寫）</span>
+      <span style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">已填寫 <span id="answered-count">0</span> / 12 題</span>
     </div>
-    <div id="schulte-grid" class="schulte-grid"></div>
+    <div class="progress-bar-wrap">
+      <div id="progress-fill" class="progress-bar-fill"></div>
+    </div>
+
+    <div id="questions-container"></div>
+
+    <button class="btn" onclick="submitAssessment()" style="margin-top: 12px;">產生整合分析與特徵比對報告</button>
   </div>
 
-  <!-- 畫面 4：結算與雷達圖分析 -->
+  <!-- 畫面 2：整合分析報告 -->
   <div id="screen-result" class="screen">
-    <span class="badge">認知評估報告</span>
-    <h2>你的專注力分析結果</h2>
-    <div class="chart-box">
+    <span class="badge">觀察分析報告</span>
+    <h1>幼兒行為特徵整合評估結果</h1>
+    <p style="color: var(--muted); font-size: 0.92rem; margin-bottom: 16px;">
+      填寫身分：<strong id="report-role">家長</strong> ｜ 本報告同時呈現「ASD 社交與固著光譜」與「雷特氏症發展倒退警訊」之比對分析。
+    </p>
+
+    <!-- 雙軌結果摘要卡片 -->
+    <div class="result-cards">
+      <div class="res-box">
+        <h3>🧩 泛自閉症類群（ASD）傾向</h3>
+        <div id="asd-badge" class="score-pill level-low">低度特徵傾向</div>
+        <p id="asd-desc" style="font-size: 0.9rem; color: #334155; margin: 0;"></p>
+      </div>
+      <div class="res-box">
+        <h3>🩺 雷特氏症（Rett）核心警訊</h3>
+        <div id="rett-badge" class="score-pill level-low">未見明顯倒退警訊</div>
+        <p id="rett-desc" style="font-size: 0.9rem; color: #334155; margin: 0;"></p>
+      </div>
+    </div>
+
+    <!-- 四大向度雷達圖 -->
+    <h2>四大觀察向度雷達圖</h2>
+    <p style="font-size: 0.88rem; color: var(--muted); margin: 0 0 10px 0;">
+      數值越高（越靠近外圈），代表該向度觀察到的異常或需要關注的行為頻率越高。
+    </p>
+    <div class="chart-container">
       <canvas id="radarChart"></canvas>
     </div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value" id="res-stroop-rt">0 ms</div>
-        <div class="stat-label">抗干擾平均反應時間</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="res-stroop-acc">0%</div>
-        <div class="stat-label">抑制控制正確率</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="res-schulte-time">0.0 秒</div>
-        <div class="stat-label">視覺搜尋總耗時</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="res-schulte-err">0 次</div>
-        <div class="stat-label">搜尋誤觸次數</div>
-      </div>
-    </div>
-    <button class="btn" onclick="location.reload()">重新測試</button>
+
+    <!-- ASD 與雷特氏症關鍵特徵比對表 -->
+    <h2>ASD 與雷特氏症關鍵特徵比對（給非特教背景師長的觀察指南）</h2>
+    <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 10px;">
+      兩者在幼兒早期都可能出現「不說話、不看人、有重複動作」，但發展軌跡與手部行為有極大差異：
+    </p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th style="width: 22%;">觀察面向</th>
+          <th style="width: 39%;">泛自閉症類群（ASD）</th>
+          <th style="width: 39%;">雷特氏症（Rett Syndrome）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>發展軌跡<br>（最關鍵差異）</strong></td>
+          <td>多數自嬰幼兒期起，社交互動與語言發展就<strong>持續較慢或表現不同</strong>，通常不會出現全面性的能力大倒退。</td>
+          <td>出生後前 6～18 個月發展看似正常，之後會出現<strong>明顯的「發展倒退期」</strong>（原本會說的詞、會用的手部技巧突然消失）。</td>
+        </tr>
+        <tr>
+          <td><strong>手部動作與<br>刻板行為</strong></td>
+          <td>手部精細動作通常正常（會拿湯匙、堆積木）；刻板行為多為<strong>拍手、轉圈、排列物品或堅持固定路線</strong>。</td>
+          <td>逐漸<strong>喪失有目的的手部功能</strong>（不會抓握玩具），並出現極具標誌性的<strong>胸前「搓手、洗手、扭手」</strong>重複動作。</td>
+        </tr>
+        <tr>
+          <td><strong>社交互動與<br>眼神接觸</strong></td>
+          <td>眼神接觸少、對呼喚沒反應、喜歡獨自玩耍，較少主動分享喜悅。</td>
+          <td>倒退期時看似像自閉症（不理人），但過了倒退期後，<strong>眼神通常會重新變得有靈性、會用眼神凝視表達需求</strong>。</td>
+        </tr>
+        <tr>
+          <td><strong>身體動作與<br>生理特徵</strong></td>
+          <td>走路與肢體協調大多正常（部分有墊腳尖走路習慣）。</td>
+          <td>常伴隨<strong>步態不穩（寬步基搖晃）</strong>、頭圍成長趨緩，或清醒時出現呼吸急促／憋氣現象。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="btn" onclick="exportCSV()">📥 下載本次觀察紀錄（CSV 表格，方便就醫或存檔）</button>
+    <button class="btn btn-outline" onclick="location.reload()">重新進行評估</button>
   </div>
 </div>
 
 <script>
-  // 切換畫面共用函式
+  // 12題生活化觀察題庫（整合 ASD 社交/固著向度 與 雷特氏症發展倒退/手部特徵向度）
+  const questions = [
+    // 向度 1：社交互動與眼神溝通 (ASD 核心)
+    {
+      id: 1,
+      dim: 'social',
+      tag: '社交互動',
+      isRett: false,
+      title: '1. 叫喚名字時的眼神回應',
+      hint: '在沒有視覺提示下叫幼兒的名字時，是否很少轉頭看人或缺乏眼神對視？'
+    },
+    {
+      id: 2,
+      dim: 'social',
+      tag: '社交互動',
+      isRett: false,
+      title: '2. 分享興趣與指物示意',
+      hint: '看到喜歡的玩具或飛機時，是否不會用手指給大人看，也不會回頭確認大人有沒有在看？'
+    },
+    {
+      id: 3,
+      dim: 'social',
+      tag: '社交互動',
+      isRett: false,
+      title: '3. 與同儕的互動意願',
+      hint: '在公園或幼兒園時，是否總是獨自玩耍，對其他小朋友的遊戲完全不感興趣或不知如何加入？'
+    },
+
+    // 向度 2：語言與非口語溝通 (ASD / 共通觀察)
+    {
+      id: 4,
+      dim: 'comm',
+      tag: '溝通表達',
+      isRett: false,
+      title: '4. 語言發展遲緩或鸚鵡式仿說',
+      hint: '口語表達明顯落後同齡幼兒，或只會重複大人剛說過的話（例如問「要吃餅乾嗎」，回答「要吃餅乾嗎」）？'
+    },
+    {
+      id: 5,
+      dim: 'comm',
+      tag: '溝通表達',
+      isRett: false,
+      title: '5. 把大人的手當成工具使用',
+      hint: '想要拿高處的東西或打開瓶蓋時，是否不會用眼神或語言求助，而是直接拉著大人的手去碰物品？'
+    },
+    {
+      id: 6,
+      dim: 'comm',
+      tag: '發展軌跡比對',
+      isRett: true,
+      title: '6. 【關鍵比對】已學會的語言或社交能力「突然消失」',
+      hint: '幼兒原本已經會叫爸爸媽媽、會揮手再見，但在 6 個月～2 歲間卻突然不再開口、也不再回應人？'
+    },
+
+    // 向度 3：固著行為與感官敏感 (ASD 核心)
+    {
+      id: 7,
+      dim: 'rigid',
+      tag: '固著與感官',
+      isRett: false,
+      title: '7. 異常的物品排列或局部執著',
+      hint: '玩玩具時不是照正常玩法，而是執著把車子排成一長排、一直轉動輪子，或盯著電風扇旋轉看很久？'
+    },
+    {
+      id: 8,
+      dim: 'rigid',
+      tag: '固著與感官',
+      isRett: false,
+      title: '8. 對日常作息或路線改變極度抗拒',
+      hint: '只要回家路線稍微改變、物品換了位置或順序不對，就會出現極度焦慮、哭鬧崩潰，很難安撫？'
+    },
+    {
+      id: 9,
+      dim: 'rigid',
+      tag: '固著與感官',
+      isRett: false,
+      title: '9. 特殊的感官過度敏感或遲鈍',
+      hint: '對特定聲音（如吹風機、沖水聲）會恐懼摀耳朵，或對某些食物材質、衣服標籤極度排斥？'
+    },
+
+    // 向度 4：手部功能退化與神經動作警訊 (雷特氏症核心特徵)
+    {
+      id: 10,
+      dim: 'rett',
+      tag: '雷特氏症核心警訊',
+      isRett: true,
+      title: '10. 【關鍵比對】無意義的「搓手 / 洗手 / 扭手」重複動作',
+      hint: '雙手在清醒時，是否經常放在胸前或嘴邊反覆做「洗手、搓揉、拍打或扭轉」的動作，且難以轉移注意力？'
+    },
+    {
+      id: 11,
+      dim: 'rett',
+      tag: '雷特氏症核心警訊',
+      isRett: true,
+      title: '11. 【關鍵比對】原本會抓握的手部功能退化',
+      hint: '原本已經會拿奶瓶、抓積木或拿餅乾吃，後來卻變得無法抓穩物品、東西容易掉落，雙手變得不靈活？'
+    },
+    {
+      id: 12,
+      dim: 'rett',
+      tag: '雷特氏症核心警訊',
+      isRett: true,
+      title: '12. 步態不穩、肢體協調退化或異常呼吸節奏',
+      hint: '學走路明顯比同齡慢、走路時雙腳張得很開且搖晃不穩，或清醒時偶爾出現突然憋氣、急促喘氣的現象？'
+    }
+  ];
+
+  const optionLabels = [
+    { score: 0, text: '從未出現 (0分)' },
+    { score: 1, text: '偶爾出現 (1分)' },
+    { score: 2, text: '經常出現 (2分)' },
+    { score: 3, text: '總是如此 (3分)' }
+  ];
+
+  let userAnswers = {};
+
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
   }
 
-  /* ==========================================
-     關卡一：Stroop 色彩干擾測驗邏輯
-     ========================================== */
-  const colors = [
-    { key: 'red', name: '紅', hex: '#dc2626' },
-    { key: 'blue', name: '藍', hex: '#2563eb' },
-    { key: 'green', name: '綠', hex: '#16a34a' },
-    { key: 'yellow', name: '黃', hex: '#d97706' }
-  ];
+  function startAssessment() {
+    userAnswers = {};
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
 
-  let stroopTotal = 10;
-  let stroopCurrent = 0;
-  let stroopCorrectCount = 0;
-  let stroopTargetColor = '';
-  let stroopStartTime = 0;
-  let stroopReactionTimes = [];
-
-  function startStroop() {
-    stroopCurrent = 0;
-    stroopCorrectCount = 0;
-    stroopReactionTimes = [];
-    showScreen('screen-stroop');
-    nextStroopQuestion();
-  }
-
-  function nextStroopQuestion() {
-    if (stroopCurrent >= stroopTotal) {
-      showScreen('screen-transition');
-      return;
-    }
-    stroopCurrent++;
-    document.getElementById('stroop-progress').innerText = stroopCurrent;
-    document.getElementById('stroop-correct').innerText = stroopCorrectCount;
-
-    // 刻意製造「字義與顏色不一致」的干擾情境（80%機率不一致）
-    const wordObj = colors[Math.floor(Math.random() * colors.length)];
-    let colorObj = colors[Math.floor(Math.random() * colors.length)];
-    if (Math.random() < 0.8) {
-      const otherColors = colors.filter(c => c.key !== wordObj.key);
-      colorObj = otherColors[Math.floor(Math.random() * otherColors.length)];
-    }
-
-    stroopTargetColor = colorObj.key;
-    const wordEl = document.getElementById('stroop-word');
-    wordEl.innerText = wordObj.name;
-    wordEl.style.color = colorObj.hex;
-
-    stroopStartTime = performance.now();
-  }
-
-  function answerStroop(selectedKey) {
-    const rt = performance.now() - stroopStartTime;
-    stroopReactionTimes.push(rt);
-
-    if (selectedKey === stroopTargetColor) {
-      stroopCorrectCount++;
-    }
-    nextStroopQuestion();
-  }
-
-  /* ==========================================
-     關卡二：舒爾特方格 (4x4) 邏輯
-     ========================================== */
-  let schulteNext = 1;
-  let schulteErrors = 0;
-  let schulteStartTime = 0;
-  let schulteDuration = 0;
-
-  function startSchulte() {
-    schulteNext = 1;
-    schulteErrors = 0;
-    document.getElementById('schulte-target').innerText = schulteNext;
-    document.getElementById('schulte-errors').innerText = schulteErrors;
-
-    // 產生 1~16 並洗牌
-    const numbers = Array.from({ length: 16 }, (_, i) => i + 1);
-    for (let i = numbers.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
-    }
-
-    const gridEl = document.getElementById('schulte-grid');
-    gridEl.innerHTML = '';
-
-    numbers.forEach(num => {
-      const cell = document.createElement('div');
-      cell.className = 'grid-cell';
-      cell.innerText = num;
-      cell.onclick = () => handleCellClick(cell, num);
-      gridEl.appendChild(cell);
+    questions.forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.innerHTML = `
+        <div class="q-header">
+          <span class="q-tag ${q.isRett ? 'rett' : ''}">${q.tag}</span>
+        </div>
+        <div class="q-title">${q.title}</div>
+        <div class="q-hint">${q.hint}</div>
+        <div class="options-grid" id="opts-${q.id}">
+          ${optionLabels.map(opt => `
+            <button type="button" class="opt-btn" onclick="selectOption(${q.id}, ${opt.score}, this)">
+              ${opt.text}
+            </button>
+          `).join('')}
+        </div>
+      `;
+      container.appendChild(card);
     });
 
-    showScreen('screen-schulte');
-    schulteStartTime = performance.now();
+    updateProgress();
+    showScreen('screen-quiz');
   }
 
-  function handleCellClick(cellEl, num) {
-    if (cellEl.classList.contains('done')) return;
+  function selectOption(qId, score, btnEl) {
+    userAnswers[qId] = score;
+    const parent = document.getElementById(`opts-${qId}`);
+    parent.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+    btnEl.classList.add('selected');
+    updateProgress();
+  }
 
-    if (num === schulteNext) {
-      cellEl.classList.add('done');
-      schulteNext++;
-      if (schulteNext > 16) {
-        schulteDuration = (performance.now() - schulteStartTime) / 1000;
-        showResults();
-      } else {
-        document.getElementById('schulte-target').innerText = schulteNext;
-      }
-    } else {
-      schulteErrors++;
-      document.getElementById('schulte-errors').innerText = schulteErrors;
-      cellEl.classList.add('wrong');
-      setTimeout(() => cellEl.classList.remove('wrong'), 250);
+  function updateProgress() {
+    const count = Object.keys(userAnswers).length;
+    document.getElementById('answered-count').innerText = count;
+    document.getElementById('progress-fill').style.width = `${(count / questions.length) * 100}%`;
+  }
+
+  function submitAssessment() {
+    if (Object.keys(userAnswers).length < questions.length) {
+      alert(`還有 ${questions.length - Object.keys(userAnswers).length} 題尚未填寫，請完成所有題目後再產生報告！`);
+      return;
     }
+
+    const role = document.getElementById('observer-role').value;
+    document.getElementById('report-role').innerText = role;
+
+    // 計算四大向度分數 (每向度 3 題，滿分 9 分)
+    let dimScores = { social: 0, comm: 0, rigid: 0, rett: 0 };
+    questions.forEach(q => {
+      dimScores[q.dim] += userAnswers[q.id];
+    });
+
+    // ASD 總指標（社交互動 + 溝通表達 + 固著行為，共 9 題，滿分 27 分）
+    const asdTotal = dimScores.social + dimScores.comm + dimScores.rigid;
+    // 雷特氏症核心警訊指標（第 6 題能力倒退 + 第 10, 11, 12 題，共 4 題，滿分 12 分）
+    const rettTotal = userAnswers[6] + dimScores.rett;
+
+    // 更新 ASD 評估卡片
+    const asdBadge = document.getElementById('asd-badge');
+    const asdDesc = document.getElementById('asd-desc');
+    if (asdTotal <= 7) {
+      asdBadge.className = 'score-pill level-low';
+      asdBadge.innerText = `低度特徵傾向（${asdTotal} / 27 分）`;
+      asdDesc.innerText = '目前在社交互動、眼神溝通與行為彈性上大致符合一般幼兒發展，建議持續陪伴互動並觀察即可。';
+    } else if (asdTotal <= 15) {
+      asdBadge.className = 'score-pill level-mid';
+      asdBadge.innerText = `中度觀察需求（${asdTotal} / 27 分）`;
+      asdDesc.innerText = '部分情境出現社交回應較弱或行為固著現象。建議記錄具體發生情境（如在幼兒園或家中），並諮詢早療或兒科醫師。';
+    } else {
+      asdBadge.className = 'score-pill level-high';
+      asdBadge.innerText = `高度 ASD 特徵傾向（${asdTotal} / 27 分）`;
+      asdDesc.innerText = '在社交溝通與重複固著行為向度分數較高，強烈建議攜帶本觀察紀錄前往「兒童發展聯合評估中心」進行專業評估。';
+    }
+
+    // 更新 雷特氏症 評估卡片
+    const rettBadge = document.getElementById('rett-badge');
+    const rettDesc = document.getElementById('rett-desc');
+    if (rettTotal <= 2) {
+      rettBadge.className = 'score-pill level-low';
+      rettBadge.innerText = `未見明顯倒退警訊（${rettTotal} / 12 分）`;
+      rettDesc.innerText = '未觀察到手部抓握功能喪失、胸前搓手動作或發展倒退現象。';
+    } else if (rettTotal <= 5) {
+      rettBadge.className = 'score-pill level-mid';
+      rettBadge.innerText = `需留意動作與發展變化（${rettTotal} / 12 分）`;
+      rettDesc.innerText = '觀察到部分動作協調或能力停滯現象，建議錄影記錄孩子平時雙手的動作，提供給小兒神經科醫師參考。';
+    } else {
+      rettBadge.className = 'score-pill level-high';
+      rettBadge.innerText = `出現發展倒退 / 手部退化警訊（${rettTotal} / 12 分）`;
+      rettDesc.innerText = '偵測到「已學會能力倒退」或「手部功能退化／搓手行為」等關鍵指標，請務必儘快至大醫院「小兒神經科」檢查。';
+    }
+
+    showScreen('screen-result');
+    renderRadarChart(dimScores);
   }
 
-  /* ==========================================
-     結算數據計算與雷達圖繪製
-     ========================================== */
-  function showResults() {
-    showScreen('screen-result');
-
-    // 1. 計算各項原始指標
-    const avgRt = Math.round(stroopReactionTimes.reduce((a, b) => a + b, 0) / stroopTotal);
-    const stroopAcc = Math.round((stroopCorrectCount / stroopTotal) * 100);
-
-    document.getElementById('res-stroop-rt').innerText = `${avgRt} ms`;
-    document.getElementById('res-stroop-acc').innerText = `${stroopAcc}%`;
-    document.getElementById('res-schulte-time').innerText = `${schulteDuration.toFixed(1)} 秒`;
-    document.getElementById('res-schulte-err').innerText = `${schulteErrors} 次`;
-
-    // 2. 將原始數據換算為 0~100 分的標準化雷達圖指標
-    const scoreInhibition = stroopAcc; // 衝動抑制力
-    const scoreSpeed = Math.max(20, Math.min(100, Math.round(100 - (avgRt - 500) / 15))); // 反應速度
-    const scoreVisual = Math.max(20, Math.min(100, Math.round(100 - (schulteDuration - 8) * 3.5))); // 視覺搜尋
-    const scoreStability = Math.max(10, 100 - schulteErrors * 15); // 操作穩定度
-
-    // 3. 使用 Chart.js 繪製雷達圖
+  let radarInstance = null;
+  function renderRadarChart(dimScores) {
     const ctx = document.getElementById('radarChart').getContext('2d');
-    new Chart(ctx, {
+    if (radarInstance) radarInstance.destroy();
+
+    // 將各向度滿分 9 分換算為百分比 (0~100)
+    const dataPct = [
+      Math.round((dimScores.social / 9) * 100),
+      Math.round((dimScores.comm / 9) * 100),
+      Math.round((dimScores.rigid / 9) * 100),
+      Math.round((dimScores.rett / 9) * 100)
+    ];
+
+    radarInstance = new Chart(ctx, {
       type: 'radar',
       data: {
-        labels: ['衝動抑制力', '大腦反應速度', '視覺搜尋專注', '操作穩定度'],
+        labels: [
+          '社交互動困難 (ASD)',
+          '溝通與能力倒退',
+          '固著與感官敏感 (ASD)',
+          '手部退化與動作警訊 (Rett)'
+        ],
         datasets: [{
-          label: '本次認知表現指標',
-          data: [scoreInhibition, scoreSpeed, scoreVisual, scoreStability],
-          backgroundColor: 'rgba(37, 99, 235, 0.2)',
-          borderColor: 'rgba(37, 99, 235, 1)',
-          pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+          label: '行為觀察指標強度 (%)',
+          data: dataPct,
+          backgroundColor: 'rgba(15, 118, 110, 0.2)',
+          borderColor: 'rgba(15, 118, 110, 1)',
+          pointBackgroundColor: 'rgba(15, 118, 110, 1)',
           borderWidth: 2
         }]
       },
@@ -477,7 +667,7 @@
           r: {
             beginAtZero: true,
             max: 100,
-            ticks: { stepSize: 20, display: false }
+            ticks: { stepSize: 25, display: false }
           }
         },
         plugins: {
@@ -485,6 +675,25 @@
         }
       }
     });
+  }
+
+  // 匯出 CSV 數據報告功能（方便收集樣本做專題統計或給家長帶去醫院）
+  function exportCSV() {
+    const role = document.getElementById('observer-role').value;
+    let csvContent = "\uFEFF題號,評估向度,觀察題目,填答分數(0-3)\n";
+    questions.forEach(q => {
+      csvContent += `${q.id},"${q.tag}","${q.title}",${userAnswers[q.id]}\n`;
+    });
+    csvContent += `\n填寫者身分,"${role}"\n評估時間,"${new Date().toLocaleString()}"\n`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `幼兒發展觀察紀錄_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 </script>
 </body>
