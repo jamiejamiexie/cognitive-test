@@ -1,0 +1,491 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>大腦專注力與抗干擾認知實驗室</title>
+  <!-- 引入 Chart.js 用於繪製結算雷達圖 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 12px;
+      color: #0f172a;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 關卡一：Stroop 測驗樣式 */
+    .stroop-word {
+      font-size: 4.5rem;
+      font-weight: 800;
+      margin: 30px 0;
+      letter-spacing: 4px;
+      user-select: none;
+    }
+
+    .color-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .color-btn {
+      padding: 18px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .color-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    /* 關卡二：舒爾特方格樣式 */
+    .schulte-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-width: 360px;
+      margin: 20px auto;
+    }
+
+    .grid-cell {
+      aspect-ratio: 1;
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: #f1f5f9;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.12s;
+      user-select: none;
+    }
+
+    .grid-cell:hover {
+      background: #e2e8f0;
+    }
+
+    .grid-cell.done {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: var(--success);
+      cursor: default;
+    }
+
+    .grid-cell.wrong {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      animation: shake 0.25s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      background: #f1f5f9;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    /* 結算報告樣式 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .chart-box {
+      max-width: 340px;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 畫面 0：首頁介紹 -->
+  <div id="screen-intro" class="screen active">
+    <span class="badge">認知心理學互動專題</span>
+    <h1>大腦專注力與抗干擾測試</h1>
+    <p>
+      本實驗透過兩項經典認知神經科學任務，量化你的<strong>「衝動抑制能力」</strong>與<strong>「視覺搜尋專注度」</strong>。全程約需 1 分鐘，請在安靜環境下作答。
+    </p>
+    <button class="btn" onclick="startStroop()">開始測驗</button>
+  </div>
+
+  <!-- 畫面 1：Stroop 色彩干擾測試 -->
+  <div id="screen-stroop" class="screen">
+    <span class="badge">關卡 1 / 2：Stroop 抗干擾任務</span>
+    <h2>請選出文字的「實際顏色」</h2>
+    <p style="margin-bottom: 10px; font-size: 0.9rem;">忽略文字本身的意義，以最快速度點擊正確顏色！</p>
+    <div class="status-bar">
+      <span>進度：<span id="stroop-progress">1</span> / 10 題</span>
+      <span>答對：<span id="stroop-correct">0</span> 題</span>
+    </div>
+    <div id="stroop-word" class="stroop-word">紅</div>
+    <div class="color-options">
+      <button class="color-btn" onclick="answerStroop('red')" style="color: #dc2626;">紅色</button>
+      <button class="color-btn" onclick="answerStroop('blue')" style="color: #2563eb;">藍色</button>
+      <button class="color-btn" onclick="answerStroop('green')" style="color: #16a34a;">綠色</button>
+      <button class="color-btn" onclick="answerStroop('yellow')" style="color: #d97706;">黃色</button>
+    </div>
+  </div>
+
+  <!-- 畫面 2：過場說明 -->
+  <div id="screen-transition" class="screen">
+    <span class="badge">第一階段完成</span>
+    <h2>準備進入視覺搜尋任務</h2>
+    <p>
+      接下來畫面會出現 <strong>1 到 16</strong> 的亂數方格（舒爾特方格）。<br>
+      請用最快速度<strong>依序從 1 點到 16</strong>，測試你的瞬間注意力集中程度。
+    </p>
+    <button class="btn" onclick="startSchulte()">開始關卡 2</button>
+  </div>
+
+  <!-- 畫面 3：舒爾特方格 -->
+  <div id="screen-schulte" class="screen">
+    <span class="badge">關卡 2 / 2：舒爾特視覺搜尋</span>
+    <h2>依序點擊 1 → 16</h2>
+    <div class="status-bar">
+      <span>下一個目標：<strong id="schulte-target" style="color: var(--primary); font-size: 1.1rem;">1</strong></span>
+      <span>失誤次數：<span id="schulte-errors">0</span> 次</span>
+    </div>
+    <div id="schulte-grid" class="schulte-grid"></div>
+  </div>
+
+  <!-- 畫面 4：結算與雷達圖分析 -->
+  <div id="screen-result" class="screen">
+    <span class="badge">認知評估報告</span>
+    <h2>你的專注力分析結果</h2>
+    <div class="chart-box">
+      <canvas id="radarChart"></canvas>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="res-stroop-rt">0 ms</div>
+        <div class="stat-label">抗干擾平均反應時間</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="res-stroop-acc">0%</div>
+        <div class="stat-label">抑制控制正確率</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="res-schulte-time">0.0 秒</div>
+        <div class="stat-label">視覺搜尋總耗時</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="res-schulte-err">0 次</div>
+        <div class="stat-label">搜尋誤觸次數</div>
+      </div>
+    </div>
+    <button class="btn" onclick="location.reload()">重新測試</button>
+  </div>
+</div>
+
+<script>
+  // 切換畫面共用函式
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* ==========================================
+     關卡一：Stroop 色彩干擾測驗邏輯
+     ========================================== */
+  const colors = [
+    { key: 'red', name: '紅', hex: '#dc2626' },
+    { key: 'blue', name: '藍', hex: '#2563eb' },
+    { key: 'green', name: '綠', hex: '#16a34a' },
+    { key: 'yellow', name: '黃', hex: '#d97706' }
+  ];
+
+  let stroopTotal = 10;
+  let stroopCurrent = 0;
+  let stroopCorrectCount = 0;
+  let stroopTargetColor = '';
+  let stroopStartTime = 0;
+  let stroopReactionTimes = [];
+
+  function startStroop() {
+    stroopCurrent = 0;
+    stroopCorrectCount = 0;
+    stroopReactionTimes = [];
+    showScreen('screen-stroop');
+    nextStroopQuestion();
+  }
+
+  function nextStroopQuestion() {
+    if (stroopCurrent >= stroopTotal) {
+      showScreen('screen-transition');
+      return;
+    }
+    stroopCurrent++;
+    document.getElementById('stroop-progress').innerText = stroopCurrent;
+    document.getElementById('stroop-correct').innerText = stroopCorrectCount;
+
+    // 刻意製造「字義與顏色不一致」的干擾情境（80%機率不一致）
+    const wordObj = colors[Math.floor(Math.random() * colors.length)];
+    let colorObj = colors[Math.floor(Math.random() * colors.length)];
+    if (Math.random() < 0.8) {
+      const otherColors = colors.filter(c => c.key !== wordObj.key);
+      colorObj = otherColors[Math.floor(Math.random() * otherColors.length)];
+    }
+
+    stroopTargetColor = colorObj.key;
+    const wordEl = document.getElementById('stroop-word');
+    wordEl.innerText = wordObj.name;
+    wordEl.style.color = colorObj.hex;
+
+    stroopStartTime = performance.now();
+  }
+
+  function answerStroop(selectedKey) {
+    const rt = performance.now() - stroopStartTime;
+    stroopReactionTimes.push(rt);
+
+    if (selectedKey === stroopTargetColor) {
+      stroopCorrectCount++;
+    }
+    nextStroopQuestion();
+  }
+
+  /* ==========================================
+     關卡二：舒爾特方格 (4x4) 邏輯
+     ========================================== */
+  let schulteNext = 1;
+  let schulteErrors = 0;
+  let schulteStartTime = 0;
+  let schulteDuration = 0;
+
+  function startSchulte() {
+    schulteNext = 1;
+    schulteErrors = 0;
+    document.getElementById('schulte-target').innerText = schulteNext;
+    document.getElementById('schulte-errors').innerText = schulteErrors;
+
+    // 產生 1~16 並洗牌
+    const numbers = Array.from({ length: 16 }, (_, i) => i + 1);
+    for (let i = numbers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+    }
+
+    const gridEl = document.getElementById('schulte-grid');
+    gridEl.innerHTML = '';
+
+    numbers.forEach(num => {
+      const cell = document.createElement('div');
+      cell.className = 'grid-cell';
+      cell.innerText = num;
+      cell.onclick = () => handleCellClick(cell, num);
+      gridEl.appendChild(cell);
+    });
+
+    showScreen('screen-schulte');
+    schulteStartTime = performance.now();
+  }
+
+  function handleCellClick(cellEl, num) {
+    if (cellEl.classList.contains('done')) return;
+
+    if (num === schulteNext) {
+      cellEl.classList.add('done');
+      schulteNext++;
+      if (schulteNext > 16) {
+        schulteDuration = (performance.now() - schulteStartTime) / 1000;
+        showResults();
+      } else {
+        document.getElementById('schulte-target').innerText = schulteNext;
+      }
+    } else {
+      schulteErrors++;
+      document.getElementById('schulte-errors').innerText = schulteErrors;
+      cellEl.classList.add('wrong');
+      setTimeout(() => cellEl.classList.remove('wrong'), 250);
+    }
+  }
+
+  /* ==========================================
+     結算數據計算與雷達圖繪製
+     ========================================== */
+  function showResults() {
+    showScreen('screen-result');
+
+    // 1. 計算各項原始指標
+    const avgRt = Math.round(stroopReactionTimes.reduce((a, b) => a + b, 0) / stroopTotal);
+    const stroopAcc = Math.round((stroopCorrectCount / stroopTotal) * 100);
+
+    document.getElementById('res-stroop-rt').innerText = `${avgRt} ms`;
+    document.getElementById('res-stroop-acc').innerText = `${stroopAcc}%`;
+    document.getElementById('res-schulte-time').innerText = `${schulteDuration.toFixed(1)} 秒`;
+    document.getElementById('res-schulte-err').innerText = `${schulteErrors} 次`;
+
+    // 2. 將原始數據換算為 0~100 分的標準化雷達圖指標
+    const scoreInhibition = stroopAcc; // 衝動抑制力
+    const scoreSpeed = Math.max(20, Math.min(100, Math.round(100 - (avgRt - 500) / 15))); // 反應速度
+    const scoreVisual = Math.max(20, Math.min(100, Math.round(100 - (schulteDuration - 8) * 3.5))); // 視覺搜尋
+    const scoreStability = Math.max(10, 100 - schulteErrors * 15); // 操作穩定度
+
+    // 3. 使用 Chart.js 繪製雷達圖
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['衝動抑制力', '大腦反應速度', '視覺搜尋專注', '操作穩定度'],
+        datasets: [{
+          label: '本次認知表現指標',
+          data: [scoreInhibition, scoreSpeed, scoreVisual, scoreStability],
+          backgroundColor: 'rgba(37, 99, 235, 0.2)',
+          borderColor: 'rgba(37, 99, 235, 1)',
+          pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { stepSize: 20, display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>
